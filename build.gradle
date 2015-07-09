@@ -1,0 +1,42 @@
+
+defaultTasks 'clean', 'build', 'dist'
+
+apply plugin: 'java'
+apply plugin: 'application'
+mainClassName = "fetchmailatt.FetchMailAtt"
+
+version = '1.0'
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'javax.mail:mail:1.4.7'
+    testCompile 'junit:junit:4.+'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'fetchmailatt.FetchMailAtt'
+    }
+}
+
+distZip {
+    archiveName "$baseName-${version}.zip"
+}
+
+applicationDistribution.from("conf/") {
+    into "bin"
+}
+
+run {
+    systemProperty 'logLevel', System.getProperty('logLevel')   // pass in as gradle run -DlogLevel=FINER
+    args System.getProperty("args").split()                     // pass in as gradle run -Dargs="arg1 arg2 ..."
+}
+
+test {
+    testLogging.showStandardStreams = true
+}
+

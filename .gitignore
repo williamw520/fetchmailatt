@@ -1,0 +1,14 @@
+.gradle/
+.svn/
+build/
+*.jar
+*.class
+*.exe
+*.obj
+*.zip
+\#*
+*~
+GPATH
+GRTAGS
+GTAGS
+GTAGS-files
