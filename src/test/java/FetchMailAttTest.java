@@ -3,11 +3,9 @@
 import junit.framework.*;
 import java.util.*;
 
-//import wwutil.sys.RandXorShift;
 
 
-
-public class FetchMailAtTest extends TestCase {
+public class FetchMailAttTest extends TestCase {
 
     protected void setUp() {
     }

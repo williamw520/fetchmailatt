@@ -2,6 +2,7 @@
 package fetchmailatt;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 import java.text.*;
 
@@ -44,9 +45,21 @@ public class Util {
     }
 
     public static Properties loadProperties(String filename) throws IOException {
+        if (!Files.exists(Paths.get(filename)))
+            return null;
         try (Reader r = new FileReader(filename)) {
             Properties  props = new Properties();
             props.load(r);
+            return props;
+        }
+    }
+
+    public static Properties loadResourceProperties(String pkgClassPath) throws IOException {
+        try (InputStream is = Util.class.getClassLoader().getResourceAsStream(pkgClassPath)) {
+            if (is == null)
+                return null;
+            Properties  props = new Properties();
+            props.load(is);
             return props;
         }
     }

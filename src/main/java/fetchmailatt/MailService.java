@@ -30,7 +30,7 @@ public class MailService {
           "download.last.days", "7"
       ));
     */
-    public static void fetchAttachments(Map<String, String> config) throws Exception {
+    public static void fetchAttachments(Map<String, String> config, boolean quiet) throws Exception {
         Path        downloadDir = Paths.get(Util.ensure(config, "download.directory"));
         String      groupby  = Util.defval(Util.ensure(config, "download.groupby", ""), "none");
         String      groupby2 = Util.defval(Util.ensure(config, "download.groupby.2nd", ""), "none");
@@ -61,8 +61,10 @@ public class MailService {
         int         latest = messages.length;
         int         oldest = downloadLimit <= 0 ? 0 : (messages.length < downloadLimit ? 0 : messages.length - downloadLimit);
 
+        if (!quiet) System.out.println("Message count: " + messages.length + ", oldest: " + (oldest+1) + ", latest: " + latest);
+        
         for (int i = latest; i > oldest; i--) {
-            log.info("Message #" + i);
+            if (!quiet) System.out.println("Message #" + i);
             Message         msg = messages[i - 1];
             long            msgTime = msg.getReceivedDate().getTime();
             Path            downloadPath = addGroupbyPath(addGroupbyPath(addGroupbyPath(downloadDir, groupby, msg), groupby2, msg), groupby3, msg);
@@ -70,18 +72,18 @@ public class MailService {
             if (attachmentParts.size() > 0 && !Files.exists(downloadPath))
                 Files.createDirectories(downloadPath);
 
-            log.info("MAIL DATE: " + msg.getReceivedDate() + ", FROM: " + getFromName(msg) + " " + getFromAddress(msg));
+            if (!quiet) System.out.println("MAIL DATE: " + msg.getReceivedDate() + ", FROM: " + getFromName(msg) + " " + getFromAddress(msg));
             for (BodyPart bp : attachmentParts) {
                 Path    file = downloadPath.resolve(bp.getFileName());
 
                 if (Files.exists(file)) {
                     if (msgTime <= Files.getLastModifiedTime(file).toMillis()) {
-                        log.info("Skip existing " + file);
+                        if (!quiet) System.out.println("Skip existing " + file);
                         continue;
                     }
                 }
 
-                log.info("Downloading " + file);
+                if (!quiet) System.out.println("Downloading " + file);
                 Files.copy(bp.getInputStream(), file, StandardCopyOption.REPLACE_EXISTING);
                 Files.setLastModifiedTime(file, FileTime.fromMillis(msgTime));
             }

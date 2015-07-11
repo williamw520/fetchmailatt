@@ -28,12 +28,29 @@ distZip {
 }
 
 applicationDistribution.from("conf/") {
-    into "bin"
+//  into "bin"
+    into "conf"
+}
+
+startScripts {
+    // Add lib/conf to start script's classpath.  It forces adding a 'lib' in front.
+    classpath += files("conf")
+
+    doLast {
+        // Remove the lib/ in front of conf.
+        def windowsScript = file getWindowsScript()
+        def unixScript    = file getUnixScript()
+        windowsScript.text = windowsScript.text.replace("lib\\conf", "conf")
+        unixScript.text  = unixScript.text.replace("lib/conf", "conf")
+    }
 }
 
 run {
+    classpath.add(files("${projectDir}/conf"))
     systemProperty 'logLevel', System.getProperty('logLevel')   // pass in as gradle run -DlogLevel=FINER
-    args System.getProperty("args").split()                     // pass in as gradle run -Dargs="arg1 arg2 ..."
+    if (System.getProperty("args") != null) {
+        args System.getProperty("args").split()                 // pass in as gradle run -Dargs="arg1 arg2 ..."
+    }
 }
 
 test {
