@@ -4,12 +4,34 @@ package fetchmailatt;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.stream.*;
+import java.util.function.*;
 import java.text.*;
 
 
 
 public class Util {
 
+    public static Path getAppDir() throws IOException {
+        Path    path = Paths.get(System.getProperty("user.home"));
+        path = path.resolve(".fetchmailatt");
+        if (!Files.exists(path))
+            Files.createDirectories(path);
+        return path;
+    }
+
+    public static Path getStateFile(String stateFilename) throws IOException {
+        return getAppDir().resolve(stateFilename + ".state");
+    }
+
+    /** Return list literals as list and return array as list; also handle null array. */
+    public static <T> List<T> asList(T... objs) {
+        return objs != null ? Arrays.asList(objs) : new ArrayList<T>();
+    }
+
+    public static <T> Stream<T> asStream(T... objs) {
+        return asList(objs).stream();
+    }
 
     /** Turns a list of arguments (or array) into a map.  Arguments are listed as key1,value1, key2,value2, ... */
     //@SuppressWarnings("unchecked")
@@ -41,13 +63,13 @@ public class Util {
     }
 
     public static Map<String, String> toMap(Properties props) {
-        return new HashMap<String, String>((Map)props);
+        return props == null ? new HashMap<String,String>() : new HashMap<String, String>((Map)props);
     }
 
-    public static Properties loadProperties(String filename) throws IOException {
-        if (!Files.exists(Paths.get(filename)))
+    public static Properties loadProperties(Path filePath) throws IOException {
+        if (!Files.exists(filePath))
             return null;
-        try (Reader r = new FileReader(filename)) {
+        try (Reader r = Files.newBufferedReader(filePath)) {
             Properties  props = new Properties();
             props.load(r);
             return props;
@@ -63,6 +85,15 @@ public class Util {
             return props;
         }
     }
+
+	public static void saveProperties(Path filePath, Properties prop) throws IOException {
+        if (Files.exists(filePath))
+            Files.delete(filePath);
+		try (Writer w = Files.newBufferedWriter(filePath)) {
+            prop.store(w, "");
+		}
+	}
+
 
 	public static boolean empty(String str) {
 		return (str == null || str.length() == 0);
@@ -90,19 +121,7 @@ public class Util {
     public static boolean iequals(String str1, String str2) {
         return str1 == null ? str2 == null : (str2 == null ? false : str1.compareToIgnoreCase(str2) == 0);
 	}
-
-    public static <K,V> V ensure(Map<K,V> map, K key) {
-        V   value = map.get(key);
-        if (value == null)
-            throw new NoSuchElementException("Entry for '" + key + "' is not defined.");
-        return value;
-    }
-
-    public static <K,V> V ensure(Map<K,V> map, K key, V defaultVal) {
-        V   value = map.get(key);
-        return value != null ? value : defaultVal;
-    }
-
+    
     public static <T> T defval(T obj, Class<T> clazz) throws Exception {
         return obj != null ? obj : clazz.newInstance();
     }
@@ -118,26 +137,6 @@ public class Util {
     public static <T> T defval(T obj, T defaultVal) {
         return obj != null ? obj : defaultVal;
     }
-
-
-    public static int toInt(String strValue, int defVal) {
-        if (strValue != null)
-            try { return Integer.parseInt(strValue); } catch(Exception ignored) {}
-        return defVal;
-    }
-
-    public static long toLong(String strValue, long defVal) {
-        if (strValue != null)
-            try { return Long.parseLong(strValue); } catch(Exception ignored) {}
-        return defVal;
-    }
-
-    public static double toDouble(String strValue, double defVal) {
-        if (strValue != null)
-            try { return Double.parseDouble(strValue); } catch(Exception ignored) {}
-        return defVal;
-    }
-
 
     private static TlsMap.Factory<SimpleDateFormat>  sTimeStrFactory = new TlsMap.Factory<SimpleDateFormat>() {
         public SimpleDateFormat create(Object key) {
@@ -230,7 +229,7 @@ public class Util {
         return a == null ? b : (b == null ? a : (a.before(b) ? a : b));
     }
 
-    /** Return the later date of two.  null being considered later than a Date. */
+    /** Return the later date of two.  null being considered earlier than a Date. */
     public static Date later(Date a, Date b) {
         return a == null ? b : (b == null ? a : (a.after(b) ? a : b));
     }
@@ -245,5 +244,79 @@ public class Util {
         cal.add(Calendar.DAY_OF_MONTH, days);
         return cal.getTime();
     }
+
+
+    private final static int[] INVALID_PATH_CHARS = {34, 60, 62, 124, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                                                     21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 58, 42, 63, 92, 47};
+    static {
+        Arrays.sort(INVALID_PATH_CHARS);
+    }
+
+    public static String cleanFilename(String filename) {
+        StringBuilder cleanName = new StringBuilder();
+        for (int i = 0; i < filename.length(); i++) {
+            int c = (int)filename.charAt(i);
+            if (Arrays.binarySearch(INVALID_PATH_CHARS, c) < 0) {
+                cleanName.append((char)c);
+            }
+        }
+        return cleanName.toString();
+    }
+
+    public static String maxStr(String str, int max) {
+        return str.substring(0, (str.length() < max) ? str.length() : max);
+    }
+
+    public static long parseByteSize(String size, long defaultVal) {
+        try {
+            size = size.replaceAll(",", "").replaceAll(" ", "").toUpperCase();
+            String  part[] = size.split("(?<=\\d)(?=\\p{L})");
+            if (part.length < 2)
+                return (long)(Double.parseDouble(part[0]));
+            if (part[1].equals("PB") || part[1].equals("P"))
+                return (long)(Double.parseDouble(part[0]) * (1024L*1024*1024*1024*1024));
+            if (part[1].equals("TB") || part[1].equals("T"))
+                return (long)(Double.parseDouble(part[0]) * (1024L*1024*1024*1024));
+            if (part[1].equals("GB") || part[1].equals("G"))
+                return (long)(Double.parseDouble(part[0]) * (1024L*1024*1024));
+            if (part[1].equals("MB") || part[1].equals("M"))
+                return (long)(Double.parseDouble(part[0]) * (1024L*1024));
+            if (part[1].equals("K"))
+                return (long)(Double.parseDouble(part[0]) * (1024L));
+            if (part[1].equals("B"))
+                return (long)(Double.parseDouble(part[0]));
+        } catch(Exception e) {}
+        return defaultVal;
+    }
+
+    public static String formatByteSize(long bytes, int decimals) {
+        decimals = Math.min(Math.max(decimals, 0), 4);
+        if (bytes < 1024) return bytes + "B";
+        int     exp = (int)(Math.log(bytes) / Math.log(1024));
+        String  pre = "KMGTPE".charAt(exp-1) + "";
+        return String.format("%." + decimals + "f%s", bytes / Math.pow(1024, exp), pre);
+    }
+
+    public static Stream<String> splitParts(String str, String delimiter) {
+        return Arrays.stream(str.split(delimiter)).map(String::trim).map(String::toLowerCase).distinct();
+    }
+
+    public static <T> Stream<T> flatOptionals(Stream<Optional<T>> list) {
+        return list.filter(Optional::isPresent).map(opt -> opt.get());
+    }
+    
+    public static <T> List<T> flatOptionals(List<Optional<T>> list) {
+        return list.stream().filter(Optional::isPresent).map(opt -> opt.get()).collect(Collectors.toList());
+    }
+
+    public static String lastPart(String str, char delimiter) {
+        return str.substring(str.lastIndexOf(delimiter) + 1);
+    }
+
+    public static String removeLastPart(String str, char delimiter) {
+        int index = str.lastIndexOf(delimiter);
+        return index == -1 ? str : str.substring(0, index);
+    }
+    
 
 }

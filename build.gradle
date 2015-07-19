@@ -3,8 +3,8 @@ defaultTasks 'clean', 'build', 'dist'
 
 apply plugin: 'java'
 apply plugin: 'application'
-mainClassName = "fetchmailatt.FetchMailAtt"
 
+mainClassName = "fetchmailatt.FetchMailAtt"
 version = '1.0'
 
 
@@ -16,6 +16,9 @@ dependencies {
     compile 'javax.mail:mail:1.4.7'
     testCompile 'junit:junit:4.+'
 }
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 jar {
     manifest {
