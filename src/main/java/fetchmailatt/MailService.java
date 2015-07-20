@@ -1,3 +1,17 @@
+/******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0.  If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/.
+ * 
+ * Software distributed under the License is distributed on an "AS IS" basis, 
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for 
+ * the specific language governing rights and limitations under the License.
+ *
+ * The Original Code is: FetchMailAtt
+ * The Initial Developer of the Original Code is: William Wong (williamw520@gmail.com)
+ * Portions created by William Wong are Copyright (C) 2015 William Wong, All Rights Reserved.
+ *
+ ******************************************************************************/
 
 package fetchmailatt;
 
@@ -20,10 +34,10 @@ public class MailService {
     /*
       Sample config:
       MailService.fetchAttachments(Util.asMap(
-          "mail.store.protocol", "imaps",
-          "mail.host", "imap.gmail.com",
           "mail.username", "USER@gmail.com",
           "mail.password", "PASSWORD",
+          "mail.host", "imap.gmail.com",
+          "mail.store.protocol", "imaps",
           "mail.folder", "INBOX",
           "download.directory", "/tmp/att",
           "download.groupby", "address",
@@ -33,7 +47,7 @@ public class MailService {
           "process.from.date", "07/07/2015",
           "process.previous.days", "7",
           "process.resume.from.last", "yes"
-      ));
+      ), false, true);
     */
     public static void fetchAttachments(Map<String, String> config, String stateFilename, boolean quiet, boolean test) throws Exception {
         long                    startMS = System.currentTimeMillis();
