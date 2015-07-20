@@ -317,6 +317,13 @@ public class Util {
         int index = str.lastIndexOf(delimiter);
         return index == -1 ? str : str.substring(0, index);
     }
+
+    public static void sleep(long sec) {
+        try {
+            Thread.sleep(sec * 1000);
+        } catch(InterruptedException e) {
+        }
+    }
     
 
 }

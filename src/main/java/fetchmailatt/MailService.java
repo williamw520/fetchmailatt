@@ -36,6 +36,7 @@ public class MailService {
       ));
     */
     public static void fetchAttachments(Map<String, String> config, String stateFilename, boolean quiet, boolean test) throws Exception {
+        long                    startMS = System.currentTimeMillis();
         Cfg                     cfg = new Cfg(config);
         Cfg                     state = new Cfg(Util.toMap(Util.loadProperties(Util.getStateFile(stateFilename))));
         Path                    downloadDir = Paths.get(cfg.ensure("download.directory"));
@@ -43,7 +44,7 @@ public class MailService {
         List                    pathers = buildGroupbyPathers(cfg);
         Predicate<Message>      mailMatchers = buildMailMatchers(cfg);
         Predicate<BodyPart>     fileMatchers = buildFileMatchers(cfg);
-        Optional<SearchTerm>    dateRange = getDateRange(cfg, state);
+        Optional<SearchTerm>    dateRange = getDateRange(cfg, state, quiet);
         int                     processLimit = cfg.asInt("process.mail.limit").orElse(0);
         Message[]               messages;
         Folder                  mailbox = openMailbox(cfg);
@@ -117,7 +118,11 @@ public class MailService {
         if (!test && lastDate != null) {
             Util.saveProperties(statePath, Util.asProperties("download.last.date", Util.formatDateYYYYMMdd(lastDate)));
         }
+        
+        double  durationSec = (double)((System.currentTimeMillis() - startMS) / 100 * 100) / 1000;
+        if (!quiet) System.out.println("fetchAttachments finished.  duration: " + durationSec  + "s");
 
+        cfg.asLong("process.sleep.before.exit").ifPresent( sec -> Util.sleep(sec) );
     }
 
     public static void dumpMessages(Map<String, String> config) {
@@ -193,7 +198,7 @@ public class MailService {
         return Util.parseDate(dateStr, Util.getDateYYYYMMdd(), Util.getDateMMddyyyy2());
     }
 
-    private static Optional<SearchTerm> getDateRange(Cfg cfg, Cfg state) {
+    private static Optional<SearchTerm> getDateRange(Cfg cfg, Cfg state, boolean quiet) {
         boolean     resumeFromLast = cfg.asBoolean("process.resume.from.last").orElse(Boolean.TRUE);
         Date        downloadLastDate = parseDate(state.val("download.last.date").orElse(""));
         Date        fromDate = parseDate(cfg.val("process.from.date").orElse(""));
@@ -206,8 +211,10 @@ public class MailService {
             fromDate = Util.later(fromDate, Util.addDays(toDate, -previousDays));
         }
 
-        if (resumeFromLast)
+        if (resumeFromLast) {
+            if (!quiet) System.out.println("Resume from last download date: " + Util.formatDateYYYYMMdd(downloadLastDate));
             fromDate = Util.later(fromDate, downloadLastDate);
+        }
 
         if (fromDate != null && toDate != null)
             return Optional.of(new AndTerm(new ReceivedDateTerm(ComparisonTerm.GE, fromDate),

@@ -32,7 +32,6 @@ public class FetchMailAtt {
     }
 
     public static void main(String[] args) {
-        long                    startMS = System.currentTimeMillis();
         CmdLine                 cl = new CmdLine();
         CmdLine.Arg<String>     argConf = cl.arg("").flag("c").name("conf");
         CmdLine.Arg<Boolean>    argQuiet = cl.arg(false).flag("q").name("quiet");
@@ -105,8 +104,6 @@ public class FetchMailAtt {
             Dbg.error(log, e);
         }
 
-        double  durationSec = (double)((System.currentTimeMillis() - startMS) / 100 * 100) / 1000;
-        if (!quiet) System.out.println(FetchMailAtt.class.getName() + " ended.  duration: " + durationSec  + "s");
     }
 
 }
