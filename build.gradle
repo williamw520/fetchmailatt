@@ -1,5 +1,5 @@
 
-defaultTasks 'clean', 'build', 'dist'
+defaultTasks 'clean', 'distZip'
 
 apply plugin: 'java'
 apply plugin: 'application'
