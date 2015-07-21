@@ -81,7 +81,7 @@ This runs the default.conf in the conf directory.
 When it runs, FetchMailAtt runs through the relevant mails once and then
 ends.  To periodically look for new emails, schedule it to run periodically
 as a task on Windows Task Manager or schedule it with cron on Linux.  The config 
-property process.resume.from.last can be set to examine new emails
+property **process.resume.from.last** can be set to examine new emails
 since the last run.
 
 You can set up tasks to run on different config files to download from different servers.
@@ -93,7 +93,7 @@ Pass the specific config file as argument when setting up the task.
 
 ## Reset Saved State
 
-When the config property process.resume.from.last is enabled, FetchMailAtt would
+When the config property **process.resume.from.last** is enabled, FetchMailAtt would
 only process new emails while skipping all the old emails.  To force it to re-process
 the old emails, reset the saved state file.
 
