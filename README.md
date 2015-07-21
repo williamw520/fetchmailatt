@@ -101,7 +101,7 @@ only process new emails while skipping all the old emails.  To force it to re-pr
 the old emails, reset the saved state file.
 
     fetchmailatt -r
-    fetchmailatt -c server1.conf -r
+    fetchmailatt -r -c server1.conf
 
 This removes the saved state file and allows FetchMailAtt to process the emails from
 beginning.
