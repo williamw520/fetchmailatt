@@ -165,19 +165,19 @@ This limits the number of mails to process,
 
     process.mail.limit = 100
 
-This only processes mails from date (mm/dd/yyyy) onward,
+This only processes the mails from date (mm/dd/yyyy) onward,
 
     process.from.date = 07/07/2015
 
-This only processes mails upto date (mm/dd/yyyy),
+This only processes the mails upto date (mm/dd/yyyy),
 
     process.to.date = 07/20/2015
 
-This only processes mails from the last N days.  This supercedes the From/To properties.
+This only processes the mails from the last N days.  This supercedes the From/To properties.
 
     process.previous.days = 7
 
-This resumes processing from the last download date.  This helps in frequent periodic runnings
+This resumes processing from the last download date.  This helps in the frequent periodic runnings
 of the program, to avoid processing any old mails.
 
     process.resume.from.last = yes
@@ -222,19 +222,19 @@ To process only the emails CC or BCC to a recipient,
 
 ## Filter by file
 
-To download only files whose names contain,
+To download only the files whose names contain,
 
     match.file.name.contains = pattern1,pattern2,pattern3
 
-To download only files whose file types are,
+To download only the files whose file types are,
 
     match.file.type.is = csv,pdf,jpg,jpeg,png,gif
 
-To download only files whose file sizes are less than,
+To download only the files whose file sizes are less than,
 
     match.file.size.less.than=10m
 
-To download only files whose file sizes are greater than,
+To download only the files whose file sizes are greater than,
 
     match.file.size.greater.than=1k
 
