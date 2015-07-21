@@ -80,11 +80,18 @@ This runs the default.conf in the conf directory.
 
 ## Periodic Run
 
-When it runs, FetchMailAtt runs through all the relevant mails once and then
+When it runs, FetchMailAtt runs through the relevant mails once and then
 ends.  To periodically look for new emails, schedule it to run periodically
 as a task on Windows Task Manager or schedule it with cron on Linux.  
 The config property process.resume.from.last can be set to examine new emails
 since the last run.
+
+You can set up tasks to run on different config files to download from different servers.
+Pass the specific config file as argument when setting up the task.
+
+    fetchmailatt -c server1.conf
+    fetchmailatt -c server2.conf
+    fetchmailatt -c server3.conf
 
 
 ## Dependency
