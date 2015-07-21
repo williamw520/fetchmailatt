@@ -94,6 +94,19 @@ Pass the specific config file as argument when setting up the task.
     fetchmailatt -c server3.conf
 
 
+## Reset Saved State
+
+When the config property process.resume.from.last is enabled, FetchMailAtt would
+only process new emails while skipping all the old emails.  To force it to re-process
+the old emails, reset the saved state file.
+
+    fetchmailatt -r
+    fetchmailatt -c server1.conf -r
+
+This removes the saved state file and allows FetchMailAtt to process the emails from
+beginning.
+
+
 ## Dependency
 
 FetchMailAtt has minimal dependency.  See below.  Note that the jar files
