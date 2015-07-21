@@ -51,7 +51,6 @@ Set the download directory
 
 For the other optional properties, see the conf/default.conf for details.
 
-
 ## Running
 
 FetchMailAtt is launched by running the one of start scripts in bin.
@@ -77,7 +76,6 @@ To run with the default.conf file,
 
 This runs the default.conf in the conf directory.
 
-
 ## Periodic Run
 
 When it runs, FetchMailAtt runs through the relevant mails once and then
@@ -93,7 +91,6 @@ Pass the specific config file as argument when setting up the task.
     fetchmailatt -c server2.conf
     fetchmailatt -c server3.conf
 
-
 ## Reset Saved State
 
 When the config property process.resume.from.last is enabled, FetchMailAtt would
@@ -106,6 +103,10 @@ the old emails, reset the saved state file.
 This removes the saved state file and allows FetchMailAtt to process the emails from
 beginning.
 
+## Secure the Configuration Files
+
+Since the conf files contain the email user credential, it's prudent to restrict
+read access to it besides the Java program.
 
 ## Dependency
 
