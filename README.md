@@ -115,6 +115,13 @@ are packaged in the distribution zip file.
 
 # Configuration Options
 
+The config file controls all aspects of the download process.  The conf directory
+is the usual place for holding the config files.
+
+When running without any command line arugment, the program uses the *cond/default.conf*
+for configuration.  When the *-c config.conf* is used, configuration properties are read
+from the config.conf file.
+
 ## Secure the Configuration Files
 
 Since the conf files contain the email user credential, it's prudent to restrict
@@ -179,12 +186,12 @@ of the program, to avoid processing any old mails.
 The program supports downloading attachments in parallel.  This increases the download 
 throughput.  To control the number of workers,
 
-    process.parallel.workers=10
+    process.parallel.workers = 10
 
 ## Pause at end
 
 Often when running in the spawned process by the system scheduler, the output to the console
-is gone when the spawned process terminated.  The following property makes the program sleeps
+is gone when the spawned process has terminated.  The following property make the program sleep
 a number of seconds before exiting, allowing you to read the console output.
 
     process.sleep.before.exit = 10
