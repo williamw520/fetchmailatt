@@ -19,6 +19,10 @@ of the download process.
 
 # Quick Start <a name="QuickStart"/>
 
+## Download Release Package
+
+Go to the [Releases](https://github.com/williamw520/fetchmailatt/releases) page to download a version of the package. 
+
 ## Setup
 
 The FetchMailAtt distribution comes as a zip file.  Unzip it to install.  The directory layout of the installation is:
