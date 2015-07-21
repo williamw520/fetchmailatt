@@ -96,7 +96,9 @@ public class FetchMailAtt {
 
             String              stateFilename = Util.removeLastPart(Util.lastPart(Util.lastPart(cfgName, '/'), '\\'), '.');
             if (argReset.value) {
-                Files.delete(Util.getStateFile(stateFilename));
+                try {
+                    Files.delete(Util.getStateFile(stateFilename));
+                } catch(Exception e) {}
             }
 
             if (argDump.value) {

@@ -54,8 +54,7 @@ public class MailService {
         Cfg                     cfg = new Cfg(config);
         Cfg                     state = new Cfg(Util.toMap(Util.loadProperties(Util.getStateFile(stateFilename))));
         Path                    downloadDir = Paths.get(cfg.ensure("download.directory"));
-        boolean                 downloadInline = cfg.asBoolean("download.inline").orElse(Boolean.FALSE);
-        List                    pathers = buildGroupbyPathers(cfg);
+        List                    groupbyPathers = buildGroupbyPathers(cfg);
         Predicate<Message>      mailMatchers = buildMailMatchers(cfg);
         Predicate<BodyPart>     fileMatchers = buildFileMatchers(cfg);
         Optional<SearchTerm>    dateRange = getDateRange(cfg, state, quiet);
@@ -92,8 +91,8 @@ public class MailService {
                     log.info("mail matched");
                 }
 
-                Path            downloadPath = resolveDownloadPath(pathers, downloadDir, msg);
-                List<BodyPart>  attachmentParts = getAttachmentParts(msg, downloadInline, new ArrayList<BodyPart>());
+                Path            downloadPath = resolveDownloadPath(groupbyPathers, downloadDir, msg);
+                List<BodyPart>  attachmentParts = getAttachmentParts(msg, cfg, new ArrayList<BodyPart>());
                 if (attachmentParts.size() > 0 && !Files.exists(downloadPath))
                     Files.createDirectories(downloadPath);
 
@@ -106,7 +105,8 @@ public class MailService {
                     } else {
                         log.info("file matched");
                     }
-                    
+
+                    Path        tmpf = downloadPath.resolve(bp.getFileName() + ".tmp");
                     Path        file = downloadPath.resolve(bp.getFileName());
 
                     if (Files.exists(file) && msgTime <= Files.getLastModifiedTime(file).toMillis()) {
@@ -116,7 +116,8 @@ public class MailService {
 
                     if (!test) {
                         if (!quiet) System.out.println("Downloading file: " + file);
-                        Files.copy(bp.getInputStream(), file, StandardCopyOption.REPLACE_EXISTING);
+                        Files.copy(bp.getInputStream(), tmpf, StandardCopyOption.REPLACE_EXISTING);
+                        Files.move(tmpf, file, StandardCopyOption.REPLACE_EXISTING);
                         Files.setLastModifiedTime(file, FileTime.fromMillis(msgTime));
                     } else {
                         if (!quiet) System.out.println("File to download: " + file);
@@ -226,7 +227,7 @@ public class MailService {
         }
 
         if (resumeFromLast) {
-            if (!quiet) System.out.println("Resume from last download date: " + Util.formatDateYYYYMMdd(downloadLastDate));
+            if (!quiet) System.out.println("Resume from last download date: " + (downloadLastDate != null ? Util.formatDateYYYYMMdd(downloadLastDate) : "none"));
             fromDate = Util.later(fromDate, downloadLastDate);
         }
 
@@ -336,18 +337,20 @@ public class MailService {
         }
     }
 
-    private static List<BodyPart> getAttachmentParts(Message message, boolean downloadInline, List<BodyPart> attachmentParts) throws Exception {
+    private static List<BodyPart> getAttachmentParts(Message message, Cfg cfg, List<BodyPart> attachmentParts) throws Exception {
+        boolean downloadInline = cfg.asBoolean("download.inline").orElse(Boolean.FALSE);
         Object  content = message.getContent();
         if (!(content instanceof String) && content instanceof Multipart) {
             Multipart   mp = (Multipart) content;
             for (int i = 0; i < mp.getCount(); i++) {
-                getAttachmentParts(mp.getBodyPart(i), downloadInline, attachmentParts);
+                getAttachmentParts(mp.getBodyPart(i), cfg, attachmentParts);
             }
         }
         return attachmentParts;
     }
 
-    private static List<BodyPart> getAttachmentParts(BodyPart part, boolean downloadInline, List<BodyPart> attachmentParts) throws Exception {
+    private static List<BodyPart> getAttachmentParts(BodyPart part, Cfg cfg, List<BodyPart> attachmentParts) throws Exception {
+        boolean downloadInline = cfg.asBoolean("download.inline").orElse(Boolean.FALSE);
         Object  content = part.getContent();
 
         // Handle straight attachment
@@ -362,7 +365,7 @@ public class MailService {
         if (content instanceof Multipart) {
             Multipart   mp = (Multipart) content;
             for (int i = 0; i < mp.getCount(); i++) {
-                getAttachmentParts(mp.getBodyPart(i), downloadInline, attachmentParts);
+                getAttachmentParts(mp.getBodyPart(i), cfg, attachmentParts);
             }
         }
 
