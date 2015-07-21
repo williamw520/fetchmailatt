@@ -20,6 +20,8 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.stream.*;
 import java.util.function.*;
+import java.util.concurrent.*;
+import java.security.MessageDigest;
 import java.text.*;
 
 
@@ -338,6 +340,35 @@ public class Util {
         } catch(InterruptedException e) {
         }
     }
-    
+
+    private static TlsMap.Factory<MessageDigest>  sMD5Factory = new TlsMap.Factory<MessageDigest>() {
+        public MessageDigest create(Object key) {
+            try {
+                return MessageDigest.getInstance("MD5");
+            } catch(Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+    };
+
+    public static byte[] md5bytes(String str) {
+        MessageDigest   md = TlsMap.get("md5", sMD5Factory);
+        md.update(str.getBytes(), 0, str.length());
+        return md.digest();
+    }
+
+    public static int md5int(String str) {
+        return Arrays.hashCode(md5bytes(str));
+    }
+
+    public static void waitAll(List<Future> futures) {
+        for (Future f : futures) {
+            try {
+                f.get();
+            } catch(Exception ignored) {
+            }
+        }
+    }
 
 }

@@ -25,6 +25,7 @@ import java.util.function.Predicate;
 import java.util.function.Function;
 import java.util.function.BiFunction;
 import java.util.stream.*;
+import java.util.concurrent.*;
 import javax.mail.*;
 import javax.mail.search.*;
 
@@ -58,9 +59,11 @@ public class MailService {
         Predicate<Message>      mailMatchers = buildMailMatchers(cfg);
         Predicate<BodyPart>     fileMatchers = buildFileMatchers(cfg);
         Optional<SearchTerm>    dateRange = getDateRange(cfg, state, quiet);
+        List<ExecutorService>   workers = initDownloadWorkers(cfg);
         int                     processLimit = cfg.asInt("process.mail.limit").orElse(0);
         Message[]               messages;
         Folder                  mailbox = openMailbox(cfg);
+        List<Future>            downloadFutures = new ArrayList<>();
 
         if (dateRange.isPresent()) {
             messages = mailbox.search(dateRange.get());
@@ -75,7 +78,8 @@ public class MailService {
         if (!quiet) System.out.println("Message count: " + messages.length + ", fetch from: " + (oldest+1) + ", to: " + latest);
 
         for (int i = oldest + 1; i <= latest; i++) {
-            if (!quiet) System.out.println("Mail Message #" + i);
+            int                 msgNum = i;
+            if (!quiet) System.out.println("Mail Message #" + msgNum);
             try {
                 Message         msg = messages[i - 1];
                 long            msgTime = msg.getReceivedDate().getTime();
@@ -115,10 +119,15 @@ public class MailService {
                     }
 
                     if (!test) {
-                        if (!quiet) System.out.println("Downloading file: " + file);
-                        Files.copy(bp.getInputStream(), tmpf, StandardCopyOption.REPLACE_EXISTING);
-                        Files.move(tmpf, file, StandardCopyOption.REPLACE_EXISTING);
-                        Files.setLastModifiedTime(file, FileTime.fromMillis(msgTime));
+                        int     index = Util.md5int(getLowerFilename(bp)) % workers.size(); // md5-hash name to the same ordered queue for same name items.
+                        downloadFutures.add(workers.get(index).submit(() -> {
+                                if (!quiet) System.out.println("Downloading message #" + msgNum + " file: " + file);
+                                Files.copy(bp.getInputStream(), tmpf, StandardCopyOption.REPLACE_EXISTING);
+                                Files.move(tmpf, file, StandardCopyOption.REPLACE_EXISTING);
+                                Files.setLastModifiedTime(file, FileTime.fromMillis(msgTime));
+                                if (!quiet) System.out.println("Downloaded message #" + msgNum + " file: " + file);
+                                return 1;
+                                }));
                     } else {
                         if (!quiet) System.out.println("File to download: " + file);
                     }
@@ -128,12 +137,17 @@ public class MailService {
             }
         }
 
+        Util.waitAll(downloadFutures);
+
         Path    statePath = Util.getStateFile(stateFilename);
         if (!quiet) System.out.println("State file for config: " + statePath);
         if (!test && lastDate != null) {
             Util.saveProperties(statePath, Util.asProperties("download.last.date", Util.formatDateYYYYMMdd(lastDate)));
         }
-        
+
+        long    stillRunningCount = shutdownWorkers(workers);
+        log.info("After shut down workers, stillRunningCount: " + stillRunningCount);
+
         double  durationSec = (double)((System.currentTimeMillis() - startMS) / 100 * 100) / 1000;
         if (!quiet) System.out.println("fetchAttachments finished.  duration: " + durationSec  + "s");
 
@@ -239,6 +253,25 @@ public class MailService {
         if (toDate != null)
             return Optional.of(new ReceivedDateTerm(ComparisonTerm.LE, toDate));
         return Optional.empty();
+    }
+
+
+    private static List<ExecutorService> initDownloadWorkers(Cfg cfg) throws Exception {
+        int     workers = Math.min(Math.max(cfg.asInt("process.parallel.workers").orElse(1), 1), 1000); // min 1 to max 1000
+        return IntStream.range(0, workers).mapToObj(i -> Executors.newSingleThreadExecutor()).collect(Collectors.toList());
+    }
+
+    private static long shutdownWorkers(List<ExecutorService> workers) {
+        // Request graceful shutdown, wait termination, force shutdown on still running, wait at the end, return remaining running count.
+        return workers.stream().peek(w -> w.shutdown()).filter(w -> !waitTerm(w)).peek(w -> w.shutdownNow()).filter(w -> !waitTerm(w)).count();
+    }
+
+    private static boolean waitTerm(ExecutorService w) {
+        try {
+            return w.awaitTermination(1, TimeUnit.SECONDS);
+        } catch(Exception e) {
+            return true;
+        }
     }
 
 
