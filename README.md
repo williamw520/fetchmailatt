@@ -5,7 +5,7 @@ FetchMailAtt downloads email attachments from mail servers.
 It supports a rich set of configuration options for easy customiztion
 of the download process.
 
-## Quick Rundown on Features
+## Quick Rundown of the Features
 
 - Supports multiple mail providers: GMail, Yahoo Mail, Outlook.com, and others.
 - Encrypted connection to mail server via IMAPS.
@@ -76,11 +76,11 @@ This runs the default.conf in the conf directory.
 
 ## Periodic Run
 
-When FetchMailAtt runs, it runs through all the relevant mails once and then
-stops.  To run periodically to download attachments from new emails, schedule
-it to run periodically as a task on Windows Task Manager or schedule it with 
-cron on Linux.  The config property process.resume.from.last can be set to
-examine new emails since the last run.
+When it runs, FetchMailAtt runs through all the relevant mails once and then
+ends.  To periodically look for new emails, schedule it to run periodically
+as a task on Windows Task Manager or schedule it with cron on Linux.  
+The config property process.resume.from.last can be set to examine new emails
+since the last run.
 
 
 ## Dependency
