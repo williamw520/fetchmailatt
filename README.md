@@ -241,7 +241,7 @@ To download only the files whose file sizes are greater than,
 
 # Build Guide <a name="DevGuide"/>
 
-This project uses Gradle and its Java plugin for building.  Set them up before building.
+This project uses Gradle and its Java plugin for building.  Set them up before running the build.
 The build file is at gradle.build.
 
 To build a distribution,
