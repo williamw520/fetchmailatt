@@ -118,9 +118,10 @@ are packaged in the distribution zip file.
 The config file controls all aspects of the download process.  The conf directory
 is the usual place for holding the config files.
 
-When running without any command line arugment, the program uses the *cond/default.conf*
+When running without any command line arugment, the program uses the *conf/default.conf*
 for configuration.  When the *-c config.conf* is used, configuration properties are read
-from the config.conf file.
+from the *conf/config.conf* file.  When the *-c /full/path/config.conf* is used, configuration
+properties are read from the specified path and file.
 
 ## Secure the Configuration Files
 
