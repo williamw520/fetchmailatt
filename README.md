@@ -69,9 +69,18 @@ any config file in it can be used.
 
 To run with the default.conf file,
 
-   fetchmailatt
+    fetchmailatt
 
 This runs the default.conf in the conf directory.
+
+
+## Periodic Run
+
+When FetchMailAtt runs, it runs through all the relevant mails once and then
+stops.  To run periodically to download attachments from new emails, schedule
+it to run periodically as a task on Windows Task Manager or schedule it with 
+cron on Linux.  The config property process.resume.from.last can be set to
+examine new emails since the last run.
 
 
 ## Dependency
@@ -98,14 +107,14 @@ fetchmailatt.jar and all the dependent jars, the start scripts, and the default.
 
 To run the app with build.gradle, which uses the conf/default.conf
 
-   gradle run
+    gradle run
 
 To pass arguments,
 
-   gradle run -Dargs="-h"
-   gradle run -Dargs="-v"
-   gradle run -Dargs="-c myserver.conf"
-   gradle run -Dargs="-r"
+    gradle run -Dargs="-h"
+    gradle run -Dargs="-v"
+    gradle run -Dargs="-c myserver.conf"
+    gradle run -Dargs="-r"
 
 
 # License
