@@ -25,7 +25,7 @@ Go to the [Releases](https://github.com/williamw520/fetchmailatt/releases) page 
 
 ## Setup
 
-The FetchMailAtt distribution comes as a zip file.  Unzip it to install.  The directory layout of the installation is:
+The FetchMailAtt release package comes as a zip file.  Unzip it to install.  The directory layout of the installation:
 
 - bin, the start scripts
 - conf, the configuration files to control download
@@ -37,7 +37,7 @@ The download configuration is contained in a config file.  The conf directory
 is the usual place for holding the config files.  The config file is in properties
 file format, with name=value lines.
 
-### Required Configuration
+### Required Properties for Configuration
 
 Set the mail server connection credential and the mail server host
 
