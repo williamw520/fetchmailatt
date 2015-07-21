@@ -53,7 +53,7 @@ For the other optional properties, see the conf/default.conf for details.
 
 ## Running
 
-FetchMailAtt is launched by running the one of start scripts in bin.
+FetchMailAtt is launched by running one of the start scripts in bin.
 
     fetchmailatt
 
