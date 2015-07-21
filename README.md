@@ -41,13 +41,13 @@ file format, with name=value lines.
 
 Set the mail server connection credential and the mail server host
 
-    mail.username=myusername@gmail.com
-    mail.password=mypassword
-    mail.host=imap.gmail.com
+    mail.username = myusername@gmail.com
+    mail.password = mypassword
+    mail.host = imap.gmail.com
 
 Set the download directory
 
-    download.directory=/opt/download
+    download.directory = /opt/download
 
 For the other optional properties, see the conf/default.conf for details.
 
