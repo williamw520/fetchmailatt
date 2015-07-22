@@ -154,81 +154,52 @@ public class Util {
         return obj != null ? obj : defaultVal;
     }
 
-    private static TlsMap.Factory<SimpleDateFormat>  sTimeStrFactory = new TlsMap.Factory<SimpleDateFormat>() {
-        public SimpleDateFormat create(Object key) {
-            String              formatStr = (String)key;            // Use the format str as the TLS cache key.
-            SimpleDateFormat    sdf = new SimpleDateFormat(formatStr);
-            sdf.setLenient(false);      // want strict date parsing.
-            return sdf;
-        }
-    };
-
+    private static TlsCache<String, SimpleDateFormat>   sFormatCache = new TlsCache("DateFormat", new TlsCache.Factory<String, SimpleDateFormat>() {
+            public SimpleDateFormat create(String key, Object... createParams) {
+                SimpleDateFormat    sdf = new SimpleDateFormat(key);    // The format str is used as the cache key.
+                sdf.setLenient(false);                                  // want strict date parsing.
+                return sdf;
+            }
+        });
+    
     public static String formatTime(String format, Date time) {
-        return TlsMap.get(format, sTimeStrFactory).format(time);
+        return sFormatCache.val(format).format(time);
     }
 
-    public static SimpleDateFormat getTimeFull() {
-        return TlsMap.get("yyyy-MM-dd.HH.mm.ss", sTimeStrFactory);
+    public static SimpleDateFormat getFormat(String format) {
+        return sFormatCache.val(format);
     }
 
-    public static String formatTimeFull(Date time) {
-        return getTimeFull().format(time);
+    public static SimpleDateFormat timeFull() {
+        return sFormatCache.val("yyyy-MM-dd.HH.mm.ss");
     }
 
-    public static SimpleDateFormat getTimeMMddHHmm() {
-        return TlsMap.get("MM/dd/yyyy hh:mma", sTimeStrFactory);
+    public static SimpleDateFormat timeMMddHHmm() {
+        return sFormatCache.val("MM/dd/yyyy hh:mma");
     }
 
-    public static String formatTimeMMddHHmm(Date time) {
-        return getTimeMMddHHmm().format(time);
+    public static SimpleDateFormat dateYYYYMMdd() {
+        return sFormatCache.val("yyyy-MM-dd");
     }
 
-    public static SimpleDateFormat getDateYYYYMMdd() {
-        return TlsMap.get("yyyy-MM-dd", sTimeStrFactory);
+    public static SimpleDateFormat dateYYYYMM() {
+        return sFormatCache.val("yyyy-MM");
     }
 
-    public static String formatDateYYYYMMdd(Date time) {
-        return getDateYYYYMMdd().format(time);
+    public static SimpleDateFormat dateYYYY() {
+        return sFormatCache.val("yyyy");
     }
 
-    public static SimpleDateFormat getDateYYYYMM() {
-        return TlsMap.get("yyyy-MM", sTimeStrFactory);
+    public static SimpleDateFormat dateMMddyyyy() {
+        return sFormatCache.val("MM/dd/yyyy");
     }
 
-    public static String formatDateYYYYMM(Date time) {
-        return getDateYYYYMM().format(time);
+    public static SimpleDateFormat dateMMddyyyy2() {
+        return sFormatCache.val("MM-dd-yyyy");
     }
 
-    public static SimpleDateFormat getDateYYYY() {
-        return TlsMap.get("yyyy", sTimeStrFactory);
-    }
-
-    public static String formatDateYYYY(Date time) {
-        return getDateYYYY().format(time);
-    }
-
-    public static SimpleDateFormat getDateMMddyyyy() {
-        return TlsMap.get("MM/dd/yyyy", sTimeStrFactory);
-    }
-
-    public static String formatDateMMddyyyy(Date time) {
-        return getDateMMddyyyy().format(time);
-    }
-
-    public static SimpleDateFormat getDateMMddyyyy2() {
-        return TlsMap.get("MM-dd-yyyy", sTimeStrFactory);
-    }
-
-    public static String formatDateMMddyyyy2(Date time) {
-        return getDateMMddyyyy().format(time);
-    }
-
-    public static SimpleDateFormat getDateMMddyy() {
-        return TlsMap.get("MM/dd/yy", sTimeStrFactory);
-    }
-
-    public static String formatDateMMddyy(Date time) {
-        return getDateMMddyy().format(time);
+    public static SimpleDateFormat dateMMddyy() {
+        return sFormatCache.val("MM/dd/yy");
     }
 
     public static Date parseDate(String dateStr, SimpleDateFormat... formats) {
@@ -249,13 +220,15 @@ public class Util {
     public static Date later(Date a, Date b) {
         return a == null ? b : (b == null ? a : (a.after(b) ? a : b));
     }
-    
+
+    private static TlsCache<String, Calendar>   sCalendarCache = new TlsCache("Calendar", new TlsCache.Factory<String, Calendar>() {
+            public Calendar create(String key, Object... createParams) {
+                return Calendar.getInstance();
+            }
+        });
+
     public static Date addDays(Date date, int days) {
-        Calendar    cal = TlsMap.get("Calendar", (Calendar)null);
-        if (cal == null) {
-            cal = Calendar.getInstance();
-            TlsMap.put("Calendar", cal);
-        }
+        Calendar    cal = sCalendarCache.val("addDays");
         cal.setTime(date);
         cal.add(Calendar.DAY_OF_MONTH, days);
         return cal.getTime();
@@ -341,19 +314,19 @@ public class Util {
         }
     }
 
-    private static TlsMap.Factory<MessageDigest>  sMD5Factory = new TlsMap.Factory<MessageDigest>() {
-        public MessageDigest create(Object key) {
-            try {
-                return MessageDigest.getInstance("MD5");
-            } catch(Exception e) {
-                e.printStackTrace();
-                return null;
+    private static TlsCache<String, MessageDigest>  sMd5Cache = new TlsCache("MessageDigest", new TlsCache.Factory<String, MessageDigest>() {
+            public MessageDigest create(String key, Object... createParams) {
+                try {
+                    return MessageDigest.getInstance("MD5");
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
             }
-        }
-    };
+        });
 
     public static byte[] md5bytes(String str) {
-        MessageDigest   md = TlsMap.get("md5", sMD5Factory);
+        MessageDigest   md = sMd5Cache.get("md5");
         md.update(str.getBytes(), 0, str.length());
         return md.digest();
     }

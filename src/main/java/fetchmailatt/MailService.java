@@ -85,7 +85,7 @@ public class MailService {
                 long            msgTime = msg.getReceivedDate().getTime();
 
                 lastDate = Util.later(lastDate, msg.getReceivedDate());
-                if (!quiet) System.out.println("DATE: " + Util.formatTimeMMddHHmm(msg.getReceivedDate()) +
+                if (!quiet) System.out.println("DATE: " + Util.timeMMddHHmm().format(msg.getReceivedDate()) +
                                                ", FROM: " + getFromName(msg) + " " + getFromAddress(msg));
 
                 if (!mailMatchers.test(msg)) {
@@ -142,7 +142,7 @@ public class MailService {
         Path    statePath = Util.getStateFile(stateFilename);
         if (!quiet) System.out.println("State file for config: " + statePath);
         if (!test && lastDate != null) {
-            Util.saveProperties(statePath, Util.asProperties("download.last.date", Util.formatDateYYYYMMdd(lastDate)));
+            Util.saveProperties(statePath, Util.asProperties("download.last.date", Util.dateYYYYMMdd().format(lastDate)));
         }
 
         long    stillRunningCount = shutdownWorkers(workers);
@@ -224,7 +224,7 @@ public class MailService {
     
     private static Date parseDate(String dateStr) {
         dateStr = dateStr.trim().replaceAll("/", "-");
-        return Util.parseDate(dateStr, Util.getDateYYYYMMdd(), Util.getDateMMddyyyy2());
+        return Util.parseDate(dateStr, Util.dateYYYYMMdd(), Util.dateMMddyyyy2());
     }
 
     private static Optional<SearchTerm> getDateRange(Cfg cfg, Cfg state, boolean quiet) {
@@ -241,7 +241,7 @@ public class MailService {
         }
 
         if (resumeFromLast) {
-            if (!quiet) System.out.println("Resume from last download date: " + (downloadLastDate != null ? Util.formatDateYYYYMMdd(downloadLastDate) : "none"));
+            if (!quiet) System.out.println("Resume from last download date: " + (downloadLastDate != null ? Util.dateYYYYMMdd().format(downloadLastDate) : "none"));
             fromDate = Util.later(fromDate, downloadLastDate);
         }
 
@@ -493,11 +493,11 @@ public class MailService {
         if (Util.iequals(groupby, "none")) {
             return msg -> Paths.get("");
         } else if (Util.iequals(groupby, "date")) {
-            return msg -> Paths.get(Util.formatDateYYYYMMdd(getReceivedDate(msg)));
+            return msg -> Paths.get(Util.dateYYYYMMdd().format(getReceivedDate(msg)));
         } else if (Util.iequals(groupby, "month")) {
-            return msg -> Paths.get(Util.formatDateYYYYMM(getReceivedDate(msg)));
+            return msg -> Paths.get(Util.dateYYYYMM().format(getReceivedDate(msg)));
         } else if (Util.iequals(groupby, "year")) {
-            return msg -> Paths.get(Util.formatDateYYYY(getReceivedDate(msg)));
+            return msg -> Paths.get(Util.dateYYYY().format(getReceivedDate(msg)));
         } else if (Util.iequals(groupby, "from")) {
             return msg -> Paths.get(Util.defval(getFromName(msg), "NONE"));
         } else if (Util.iequals(groupby, "address")) {
