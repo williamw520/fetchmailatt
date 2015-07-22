@@ -15,23 +15,20 @@
 
 package fetchmailatt;
 
-
 import java.util.*;
 
 
 /**
- * Shared thread local storage cache.  All instances shared the same TLS cache.
- * Using the same key, cached item can be accessed by different instances of the same namespace.
+ * Shared thread local storage cache.  All instances share the same TLS cache.
+ * Using the same key, cached item can be accessed by different instances with the same namespace.
  */
 public class TlsCache<K,V> {
 
-    // Shared TLS map for all instances of TlsCache.
     private static final ThreadLocal<Map>   sTlsObj = new ThreadLocal<Map>() {
         protected Map initialValue() {
             return new HashMap();
         }
     };
-
 
     public static interface Factory<K,V> {
         public V create(K key, Object... createParams);
@@ -41,13 +38,13 @@ public class TlsCache<K,V> {
     private String                  namespace;
     private TlsCache.Factory<K,V>   factory;
 
-    /** Create a TlsCache access object, with no factory. */
+    /** Create a cache access object on the namespace, with no factory. */
     public TlsCache(String namespace) {
         this.namespace = namespace;
         sTlsObj.get().put(namespace, new HashMap<K,V>());
     }
 
-    /** Create a TlsCache access object, with factory to create missing item. */
+    /** Create a cache access object on the namespace, with factory to create missing item. */
     public TlsCache(String namespace, TlsCache.Factory<K,V> factory) {
         this.namespace = namespace;
         this.factory = factory;
@@ -73,41 +70,20 @@ public class TlsCache<K,V> {
         return value;
     }
 
+    /** Cache an item. */
     public void put(K key, V value) {
         ((Map<K,V>)sTlsObj.get().get(namespace)).put(key, value);
     }
 
+    /** Remove an item from cache. */
     public V remove(K key) {
         return ((Map<K,V>)sTlsObj.get().get(namespace)).remove(key);
     }
 
+    /** Remove all items with the same namespace in the cache. */
     public void clear() {
         ((Map<K,V>)sTlsObj.get().get(namespace)).clear();
     }
-
-
-    // Raw access on the shared TLS object.
-    
-	public static Object sget(Object key) {
-		return sTlsObj.get().get(key);
-	}
-
-	public static <T> T sget(Object key, T defaultVal) {
-        T   value = (T)sget(key);
-        return value != null ? value : defaultVal;
-	}
-
-	public static void sput(Object key, Object value) {
-		sTlsObj.get().put(key, value);
-	}
-
-	public static Object sremove(Object key) {
-		return sTlsObj.get().remove(key);
-	}
-
-	public static void sclear()	{
-		sTlsObj.remove();
-	}
 
 }
 
