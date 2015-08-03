@@ -8,52 +8,72 @@ of the download process.
 ## Quick Rundown of the Features
 
 - Supports multiple mail providers: GMail, Yahoo Mail, Outlook.com, and others.
-- Encrypted connection to mail server via IMAPS.
-- Grouping of downloads into folders, with support for hierarchical folders.
-- Group by: Year, Month, Date, From, Address, and Subject.
-- Limit processing with date range, with previous N days, and with message limit.
+- Encrypted mail server connection with SSL/TLS (IMAPS).
 - Incremental download from the last download date.
-- Parallel downloads via multi-thread workers.
-- Filtering on emails by: Subject, From, Address, To/CC/BCC.
-- Filtering on files by: file type, file name, min/max sizes.
+- Grouping of download files into hierarchical folders.
+- Group by: Year, Month, Date, From, Address, or Subject.
+- Limit processing with date range, with previous N days, or with message limit.
+- Filter on emails by: Subject, From, Address, or To/CC/BCC.
+- Filter on files by: file type, file name, or min/max sizes.
+- Parallel downloads.
 
 # Quick Start <a name="QuickStart"/>
 
-## Download Release Package
+## Download the Release Package
 
 Go to the [Releases](https://github.com/williamw520/fetchmailatt/releases) page to download a version of the package. 
+
+## Dependency
+
+Java 8 JRE is needed on the computer for running.
 
 ## Setup
 
 The FetchMailAtt release package comes as a zip file.  Unzip it to install.  The directory layout of the installation:
 
-- bin, the start scripts
-- conf, the configuration files to control download
-- lib, the jar files.
+- bin, the run scripts
+- conf, the configuration files
+- lib, the jar files
 
 ## Configuration
 
-The download configuration is contained in a config file.  The conf directory
-is the usual place for holding the config files.  The config file is in properties
-file format, with name=value lines.
+Config file is used to control the download process.
+It has simple *name=value* property lines.  
+The config files reside in the 'conf' directory.
 
 ### Required Properties for Configuration
 
 Set the mail server connection credential and the mail server host
 
-    mail.username = myusername@gmail.com
-    mail.password = mypassword
+    e.g.
+    mail.username = yourusername@gmail.com
+    mail.password = yourpassword
     mail.host = imap.gmail.com
 
 Set the download directory
 
     download.directory = /opt/download
 
-For the other optional properties, see the conf/default.conf for details.
+For the other optional properties, see the Configuration Options section below
+or see the conf/default.conf for details.
 
 ## Running
 
-FetchMailAtt is launched by running one of the start scripts in bin.
+FetchMailAtt is launched by running one of the run scripts in bin.
+This runs with the default.conf file.
+
+    fetchmailatt
+
+Run with a specific config file,
+
+    fetchmailatt -c myconfig.conf
+    fetchmailatt -c /full/path/myconfig.conf
+
+Without full path, the classpath is searched
+for the *myconfig.conf* file.  The conf directory is part of the classpath;
+any config file in it can be used.  With full path, the specified config file is used.
+
+To run with the default.conf file in the conf directory.
 
     fetchmailatt
 
@@ -61,24 +81,15 @@ Run fetchmailatt -h for the command line options.
 
     fetchmailatt -h
 
-To run with a specific config file,
+### On Linux (or Unix)
 
-    fetchmailatt -c myconfig.conf
-    fetchmailatt -c /full/path/myconfig.conf
+Apply execute mode to the fetchmailatt shell script to make it runnable.
 
-Without the full path to the config file, the classpath is searched
-for the myconfig.conf file.  The conf directory is part of the classpath;
-any config file in it can be used.
-
-To run with the default.conf file,
-
-    fetchmailatt
-
-This runs the default.conf in the conf directory.
+    chmod +x bin/fetchmailatt
 
 ## Periodic Run
 
-When it runs, FetchMailAtt runs through the relevant mails once and then
+When it runs, FetchMailAtt processes through the relevant mails once and then
 ends.  To periodically look for new emails, schedule it to run periodically
 as a task on Windows Task Manager or schedule it with cron on Linux.  The config 
 property *process.resume.from.last* can be set to examine new emails
@@ -103,20 +114,15 @@ the old emails, reset the saved state file.
 This removes the saved state file and allows FetchMailAtt to process the emails from
 beginning.
 
-## Dependency
+## Mail Vendor
 
-FetchMailAtt has minimal dependency.  See below.  Note that the jar files
-are packaged in the distribution zip file.
+### GMail
 
-* Java 8 JRE.
-* JavaMail jar.
-* Activation jar, for secured authentication to mail server.
-
+To get SSL/TLS with user credential connection to gmail server working, enable [Less secure app](https://www.google.com/settings/security/lesssecureapps) on the Google email account.
 
 # Configuration Options
 
-The config file controls all aspects of the download process.  The conf directory
-is the usual place for holding the config files.
+The config file controls all aspects of the download process.
 
 When running without any command line arugment, the program uses the *conf/default.conf*
 for configuration.  When the *-c config.conf* is used, configuration properties are read
@@ -241,8 +247,18 @@ To download only the files whose file sizes are greater than,
 
 # Build Guide <a name="DevGuide"/>
 
-This project uses Gradle and its Java plugin for building.  Set them up before running the build.
+## Build Dependency
+
+FetchMailAtt has minimal dependency.
+
+* Java 8.  JDK 8 is required for building.
+* JavaMail jar.
+* Activation jar, for secured authentication to mail server.
+
+The build uses Gradle and its Java plugin for building.  Set them up before running the build.
 The build file is at gradle.build.
+
+## Build and Test
 
 To build a distribution,
 
@@ -251,7 +267,7 @@ To build a distribution,
 The distribution is in build/distributions/fetchmailatt.zip, which contains
 fetchmailatt.jar and all the dependent jars, the start scripts, and the default.conf.
 
-To run the app with build.gradle, which uses the conf/default.conf
+To run and test the app with build.gradle, which uses the conf/default.conf
 
     gradle run
 
