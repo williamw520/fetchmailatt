@@ -63,12 +63,12 @@ or see the *conf/default.conf* for details.
 
 ## Running
 
-FetchMailAtt is launched by running one of the run scripts in bin.
-This runs with the *default.conf* file.
+Program is launched by running one of the run scripts in bin.
+This runs on the *default.conf* file.
 
     fetchmailatt
 
-Run with a specific config file,
+Run on a specific config file,
 
     fetchmailatt -c myconfig.conf
     fetchmailatt -c /full/path/myconfig.conf
@@ -81,7 +81,7 @@ To run with the *default.conf* file in the conf directory.
 
     fetchmailatt
 
-Run fetchmailatt -h for the command line options.
+Run fetchmailatt -h for other command line options.
 
     fetchmailatt -h
 
@@ -142,7 +142,7 @@ The mail sever host can be set with the following.  Any IMAP server server is su
 
     mail.host = imap.gmail.com
 
-Set the mail store proptocol.  It can be imap or imaps (for SSL secured connection).
+Set the mail store proptocol.  It can be imap or imaps (for SSL/TLS secured connection).
 
     mail.store.protocol = imaps
 
@@ -285,6 +285,6 @@ To pass arguments,
 
 FetchMailAtt is licensed under the Mozilla Public License 2.0 (MPL).  See the
 LICENSE file for detail.  Basically you can incorporate the project into your
-work however you like (open source or proprietary), but when making change
-to the project itself, you need to release the changes under MPL.
+work however you like (open source or proprietary) with proper attribution to
+the project, but when making change to the project itself, you need to release the changes under MPL.
 
