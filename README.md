@@ -29,7 +29,7 @@ Java 8 JRE is needed on the computer for running.
 
 ## Setup
 
-The FetchMailAtt release package comes as a zip file.  Unzip it to install.  The directory layout of the installation:
+The release package comes as a zip file.  Unzip it to install.  The directory layout of the installation:
 
 - bin, the run scripts
 - conf, the configuration files
@@ -40,6 +40,10 @@ The FetchMailAtt release package comes as a zip file.  Unzip it to install.  The
 Config file is used to control the download process.
 It has simple *name=value* property lines.  
 The config files reside in the 'conf' directory.
+
+### Default.conf
+
+The *default.conf* is used when none is specified on running the app.  Edit this file for easy configuration.
 
 ### Required Properties for Configuration
 
@@ -54,13 +58,13 @@ Set the download directory
 
     download.directory = /opt/download
 
-For the other optional properties, see the Configuration Options section below
-or see the conf/default.conf for details.
+For the other optional properties, see the *Configuration Options* section below
+or see the *conf/default.conf* for details.
 
 ## Running
 
 FetchMailAtt is launched by running one of the run scripts in bin.
-This runs with the default.conf file.
+This runs with the *default.conf* file.
 
     fetchmailatt
 
@@ -73,7 +77,7 @@ Without full path, the classpath is searched
 for the *myconfig.conf* file.  The conf directory is part of the classpath;
 any config file in it can be used.  With full path, the specified config file is used.
 
-To run with the default.conf file in the conf directory.
+To run with the *default.conf* file in the conf directory.
 
     fetchmailatt
 
@@ -92,10 +96,10 @@ Apply execute mode to the fetchmailatt shell script to make it runnable.
 When it runs, FetchMailAtt processes through the relevant mails once and then
 ends.  To periodically look for new emails, schedule it to run periodically
 as a task on Windows Task Manager or schedule it with cron on Linux.  The config 
-property *process.resume.from.last* can be set to examine new emails
-since the last run.
+property *process.resume.from.last* enables/disables resuming from last run to
+examine only the new emails.
 
-You can set up tasks to run on different config files to download from different servers.
+Set up different tasks to run on different config files to download from different servers.
 Pass the specific config file as argument when setting up the task.
 
     fetchmailatt -c server1.conf
@@ -111,8 +115,7 @@ the old emails, reset the saved state file.
     fetchmailatt -r
     fetchmailatt -r -c server1.conf
 
-This removes the saved state file and allows FetchMailAtt to process the emails from
-beginning.
+This removes the saved state file and processed the emails from beginning again.
 
 ## Mail Vendor
 
@@ -124,15 +127,14 @@ To get SSL/TLS with user credential connection to gmail server working, enable [
 
 The config file controls all aspects of the download process.
 
-When running without any command line arugment, the program uses the *conf/default.conf*
-for configuration.  When the *-c config.conf* is used, configuration properties are read
-from the *conf/config.conf* file.  When the *-c /full/path/config.conf* is used, configuration
-properties are read from the specified path and file.
+Running without any command line arugment, the program uses the *conf/default.conf*
+for configuration.  When called with *-c config.conf*, the *conf/config.conf* file is used.
+When called with *-c /full/path/config.conf*, the specified file on the path is used.
 
 ## Secure the Configuration Files
 
 Since the conf files contain the email user credential, it's prudent to restrict
-read access to it besides the Java program.
+read access to them to all beside yourself.
 
 ## Mail host, protocol, and folder
 
