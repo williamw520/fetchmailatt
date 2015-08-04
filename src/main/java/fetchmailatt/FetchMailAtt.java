@@ -30,7 +30,7 @@ public class FetchMailAtt {
     private static final Logger log = Logger.getLogger(FetchMailAtt.class.getName());
 
     static {
-        Dbg.setRootLogLevel("WARNING");
+        Dbg.setPkgLogLevel("", "WARNING", null);    // set log level at root package.
     }
 
     private static void usage() {
@@ -46,7 +46,7 @@ public class FetchMailAtt {
         CmdLine.Arg<Boolean>    argDump = cl.arg(false).flag("d").name("dump");
         CmdLine.Arg<Boolean>    argVersion = cl.arg(false).flag("v").name("version");
         CmdLine.Arg<Boolean>    argHelp = cl.arg(false).flag("h").name("help");
-        CmdLine.Arg<String>     argLogLevel = cl.arg("WARNING").flag("l");
+        CmdLine.Arg<String>     argLogLevel = cl.arg("INFO").flag("l");
 
         try {
             cl.process(args);
@@ -56,22 +56,22 @@ public class FetchMailAtt {
             return;
         }
 
-        if (argLogLevel.has) {
-            Dbg.setRootLogLevel(argLogLevel.value);
-        }
-        if (argHelp.value) {
-            usage();
-            return;
-        }
-        if (argVersion.value) {
-            System.out.println(APP + " " + VERSION);
-            return;
-        }
-
         try {
             boolean             quiet = argQuiet.value;
             Properties          conf;
             String              cfgName = argConf.value;
+
+            if (argLogLevel.has) {
+                Dbg.setPkgLogLevel("", argLogLevel.value, new Dbg.CompactLogFormatter());
+            }
+            if (argHelp.value) {
+                usage();
+                return;
+            }
+            if (argVersion.value) {
+                System.out.println(APP + " " + VERSION);
+                return;
+            }
 
             if (argConf.has) {
                 if ((conf = Util.loadProperties(Paths.get(cfgName))) == null) {
@@ -107,7 +107,7 @@ public class FetchMailAtt {
                 MailService.fetchAttachments(Util.toMap(conf), stateFilename, quiet, argTest.value);
             }
 
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Dbg.error(log, e);
         }
 

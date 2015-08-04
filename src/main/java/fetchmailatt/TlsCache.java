@@ -34,6 +34,7 @@ public class TlsCache<K,V> {
         public V create(K key, Object... createParams);
     }
 
+    private static final String     NULLKEY = "_nullkey";
 
     private String                  namespace;
     private TlsCache.Factory<K,V>   factory;
@@ -53,36 +54,65 @@ public class TlsCache<K,V> {
 
     /** Get a cached item.  Return null if not exists. */
     public V get(K key) {
-        return ((Map<K,V>)sTlsObj.get().get(namespace)).get(key);
+        if (key != null) {
+            return ((Map<K, V>)sTlsObj.get().get(namespace)).get(key);
+        } else {
+            return ((Map<String, V>)sTlsObj.get().get(NULLKEY)).get(namespace); // for null key, use namespace as key on the NULLKEY map.
+        }
+    }
+
+    public V get() {
+        return get(null);   // Treat no key as null key.
     }
 
     /** Get a cached item.  Create and cache it if not exists. */
     public V val(K key, Object... createParams) {
         if (factory == null)
             throw new RuntimeException("No factory defined.");
-    
-        Map<K,V> map = (Map<K,V>)sTlsObj.get().get(namespace);
-        V   value = map.get(key);
-        if (value == null) {
-            value = factory.create(key, createParams);
-            map.put(key, value);
+
+        V   value;
+        if (key != null) {
+            Map<K, V>       map = (Map<K, V>)sTlsObj.get().get(namespace);
+            if ((value = map.get(key)) == null) {
+                value = factory.create(key, createParams);
+                map.put(key, value);
+            }
+        } else {
+            Map<String, V>  nullmap = (Map<String, V>)sTlsObj.get().get(NULLKEY);
+            if ((value = nullmap.get(namespace)) == null) {         // for null key, use namespace as key on the NULLKEY map.
+                value = factory.create(key, createParams);
+                nullmap.put(namespace, value);
+            }
         }
         return value;
     }
 
+    public V val() {
+        return val(null);   // Treat no key as null key.
+    }
+
     /** Cache an item. */
     public void put(K key, V value) {
-        ((Map<K,V>)sTlsObj.get().get(namespace)).put(key, value);
+        if (key != null) {
+            ((Map<K, V>)sTlsObj.get().get(namespace)).put(key, value);
+        } else {
+            ((Map<String, V>)sTlsObj.get().get(NULLKEY)).put(namespace, value);
+        }
     }
 
     /** Remove an item from cache. */
     public V remove(K key) {
-        return ((Map<K,V>)sTlsObj.get().get(namespace)).remove(key);
+        if (key != null) {
+            return ((Map<K, V>)sTlsObj.get().get(namespace)).remove(key);
+        } else {
+            return ((Map<String, V>)sTlsObj.get().get(NULLKEY)).remove(namespace);
+        }
     }
 
     /** Remove all items with the same namespace in the cache. */
     public void clear() {
-        ((Map<K,V>)sTlsObj.get().get(namespace)).clear();
+        ((Map<K, V>)sTlsObj.get().get(namespace)).clear();
+        ((Map<String, V>)sTlsObj.get().get(NULLKEY)).remove(namespace);
     }
 
 }

@@ -2,9 +2,9 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0.  If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/.
- * 
- * Software distributed under the License is distributed on an "AS IS" basis, 
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for 
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
  * the specific language governing rights and limitations under the License.
  *
  * The Original Code is: FetchMailAtt
@@ -16,7 +16,11 @@
 package fetchmailatt;
 
 import java.io.*;
+import java.text.*;
+import java.util.*;
+import java.util.function.*;
 import java.util.logging.*;
+import java.util.logging.Formatter;
 
 
 public class Dbg {
@@ -27,86 +31,46 @@ public class Dbg {
     public static void error(Logger log, String msg, Throwable thrown) {
         log.log(Level.SEVERE, msg, thrown);
     }
-    
+
     public static void error(Logger log, Throwable thrown) {
         log.log(Level.SEVERE, "", thrown);
     }
-    
+
+
     public static String getStackTrace(Throwable e) {
-		StringWriter	strWriter = null;
-		PrintWriter		printWriter = null;
-		String			stackTrace = "";
-
-		try {
-			strWriter = new StringWriter();
-			printWriter = new PrintWriter(strWriter);
-
+		try ( StringWriter strWriter = new StringWriter();
+              PrintWriter  printWriter = new PrintWriter(strWriter);
+            ) {
 			e.printStackTrace(printWriter);
 			printWriter.flush();
-			stackTrace = strWriter.toString();
-		} catch (Exception e1) {
-        } finally {
-			try {
-				printWriter.close();
-				strWriter.close();
-			} catch(Exception e2) {
-			}
-		}
-		return stackTrace;
+			return strWriter.toString();
+		} catch (Exception ignored) {
+        }
+		return "";
+	}
+
+    public static String formatExceptions(Throwable e, Function<Throwable, String> getter) {
+		try ( StringWriter strWriter = new StringWriter();
+              PrintWriter  printWriter = new PrintWriter(strWriter);
+            ) {
+            while (e != null) {
+                printWriter.print("\n    ");
+                printWriter.println(getter.apply(e));
+                e = e.getCause();
+            }
+			printWriter.flush();
+			return strWriter.toString();
+		} catch (Exception ignored) {
+        }
+		return "";
 	}
 
     public static String formatExceptions(Throwable e) {
-		StringWriter	strWriter = null;
-		PrintWriter		printWriter = null;
-		String			stackTrace = "";
-
-		try {
-			strWriter = new StringWriter();
-			printWriter = new PrintWriter(strWriter);
-
-            while (e != null) {
-                printWriter.print("\n    ");
-                printWriter.println(e.toString());
-                e = e.getCause();
-            }
-			printWriter.flush();
-			stackTrace = strWriter.toString();
-		} catch (Exception e1) {
-        } finally {
-			try {
-				printWriter.close();
-				strWriter.close();
-			} catch(Exception e2) {
-			}
-		}
-		return stackTrace;
+        return formatExceptions(e, (t) -> t.toString());
 	}
 
-    public static String formatExceptionText(Throwable e) {
-		StringWriter	strWriter = null;
-		PrintWriter		printWriter = null;
-		String			stackTrace = "";
-
-		try {
-			strWriter = new StringWriter();
-			printWriter = new PrintWriter(strWriter);
-
-            while (e != null) {
-                printWriter.print("\n    ");
-                printWriter.println(e.getMessage());
-                e = e.getCause();
-            }
-			printWriter.flush();
-			stackTrace = strWriter.toString();
-		} catch (Exception e1) {
-        } finally {
-			try {
-				printWriter.close();
-				strWriter.close();
-			} catch(Exception e2) {
-			}
-		}
-		return stackTrace;
+    public static String formatExceptionMsg(Throwable e) {
+        return formatExceptions(e, (t) -> t.getMessage());
 	}
 
 
@@ -123,20 +87,56 @@ public class Dbg {
 		return "Elapsed from start " + fromStart + ", from last " + fromLast + ", " + msg;
 	}
 
-    /** Set the logging level of the root package logger.
+    /** Set the logging level of the package logger.
      * If logLevel is not passed in, get it from system property.
      * logLevel: "SEVERE", "WARNING", "INFO", "FINE", "FINER", etc
      */
-    public static void setRootLogLevel(String logLevel) {
+    public static void setPkgLogLevel(String pkg, String logLevel, Formatter formatter) {
         if (logLevel == null)
             logLevel = System.getProperty("logLevel");
 
         Level   level = logLevel == null || logLevel.isEmpty() ? Level.INFO : Level.parse(logLevel);
-        Logger  rootLogger = Logger.getLogger("");
+        Logger  pkgLogger = Logger.getLogger(pkg);
 
-        rootLogger.setLevel(level);
-        for (Handler handler : rootLogger.getHandlers()) {
+        pkgLogger.setLevel(level);
+        for (Handler handler : pkgLogger.getHandlers()) {
             handler.setLevel(level);
+            if (formatter != null)
+                handler.setFormatter(formatter);
+        }
+    }
+
+
+    public static class CompactLogFormatter extends Formatter {
+        private static final String LF = System.getProperty("line.separator");
+
+        private static final TlsCache<String, SimpleDateFormat> sFormat = new TlsCache("LogDateFormat", new TlsCache.Factory<String, SimpleDateFormat>() {
+                public SimpleDateFormat create(String key, Object... createParams) {
+                    return new SimpleDateFormat("yyyy-MM-dd.HH.mm.ss");
+                }
+            });
+
+        private static final TlsCache<String, StringBuilder>    sSB = new TlsCache("LogSB", new TlsCache.Factory<String, StringBuilder>() {
+                public StringBuilder create(String key, Object... createParams) {
+                    return new StringBuilder();
+                }
+            });
+
+        private static String getName(LogRecord r) {
+            String  name = r.getLoggerName();
+            int     len = name.length() < 30 ? name.length() : 30;
+            return name.substring(name.length() - len, name.length());
+        }
+
+        public String format(LogRecord r) {
+            StringBuilder sb = sSB.val();
+            sb.setLength(0);
+            sb.append(sFormat.val().format(new Date(r.getMillis()))).append(" ").append(r.getLevel().getName()).append(": ")
+                .append(getName(r)).append(" ").append(formatMessage(r)).append(LF);
+            if (r.getThrown() != null) {
+                sb.append(Dbg.getStackTrace(r.getThrown()));
+            }
+            return sb.toString();
         }
     }
 
