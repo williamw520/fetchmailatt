@@ -102,25 +102,25 @@ public class Util {
         }
     }
 
-	public static void saveProperties(Path filePath, Properties prop) throws IOException {
+    public static void saveProperties(Path filePath, Properties prop) throws IOException {
         if (Files.exists(filePath))
             Files.delete(filePath);
-		try (Writer w = Files.newBufferedWriter(filePath)) {
+        try (Writer w = Files.newBufferedWriter(filePath)) {
             prop.store(w, "");
-		}
-	}
+        }
+    }
 
 
-	public static boolean empty(String str) {
-		return (str == null || str.length() == 0);
-	}
+    public static boolean empty(String str) {
+        return (str == null || str.length() == 0);
+    }
 
-	public static boolean empty(Object obj) {
-		return (obj == null || obj.toString().length() == 0);
-	}
+    public static boolean empty(Object obj) {
+        return (obj == null || obj.toString().length() == 0);
+    }
 
     // Str is considered empty if it's null, len==0, or one of the emptyTokens
-	public static boolean empty(String str, String... emptyTokens) {
+    public static boolean empty(String str, String... emptyTokens) {
         if (empty(str))
             return true;
         for (String token : emptyTokens) {
@@ -128,7 +128,7 @@ public class Util {
                 return true;
         }
         return false;
-	}
+    }
 
     public static boolean equals(String str1, String str2) {
         return str1 == null ? str2 == null : (str2 == null ? false : str1.equals(str2));
@@ -136,7 +136,7 @@ public class Util {
 
     public static boolean iequals(String str1, String str2) {
         return str1 == null ? str2 == null : (str2 == null ? false : str1.compareToIgnoreCase(str2) == 0);
-	}
+    }
     
     public static <T> T defval(T obj, Class<T> clazz) throws Exception {
         return obj != null ? obj : clazz.newInstance();

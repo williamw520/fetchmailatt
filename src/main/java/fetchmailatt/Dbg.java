@@ -24,8 +24,8 @@ import java.util.logging.Formatter;
 
 
 public class Dbg {
-	private static long     sStartTime = System.currentTimeMillis();
-	private static long     sLastTime = System.currentTimeMillis();
+    private static long     sStartTime = System.currentTimeMillis();
+    private static long     sLastTime = System.currentTimeMillis();
 
 
     public static void error(Logger log, String msg, Throwable thrown) {
@@ -38,19 +38,19 @@ public class Dbg {
 
 
     public static String getStackTrace(Throwable e) {
-		try ( StringWriter strWriter = new StringWriter();
+        try ( StringWriter strWriter = new StringWriter();
               PrintWriter  printWriter = new PrintWriter(strWriter);
             ) {
-			e.printStackTrace(printWriter);
-			printWriter.flush();
-			return strWriter.toString();
-		} catch (Exception ignored) {
+            e.printStackTrace(printWriter);
+            printWriter.flush();
+            return strWriter.toString();
+        } catch (Exception ignored) {
         }
-		return "";
-	}
+        return "";
+    }
 
     public static String formatExceptions(Throwable e, Function<Throwable, String> getter) {
-		try ( StringWriter strWriter = new StringWriter();
+        try ( StringWriter strWriter = new StringWriter();
               PrintWriter  printWriter = new PrintWriter(strWriter);
             ) {
             while (e != null) {
@@ -58,34 +58,34 @@ public class Dbg {
                 printWriter.println(getter.apply(e));
                 e = e.getCause();
             }
-			printWriter.flush();
-			return strWriter.toString();
-		} catch (Exception ignored) {
+            printWriter.flush();
+            return strWriter.toString();
+        } catch (Exception ignored) {
         }
-		return "";
-	}
+        return "";
+    }
 
     public static String formatExceptions(Throwable e) {
         return formatExceptions(e, (t) -> t.toString());
-	}
+    }
 
     public static String formatExceptionMsg(Throwable e) {
         return formatExceptions(e, (t) -> t.getMessage());
-	}
+    }
 
 
     public static void timeStart() {
         sLastTime = sStartTime = System.currentTimeMillis();
     }
 
-	public static String timeDuration(String msg)
-	{
-		long    now = System.currentTimeMillis();
-		long    fromLast  = now - sLastTime;
-		long    fromStart = now - sStartTime;
-		sLastTime = now;
-		return "Elapsed from start " + fromStart + ", from last " + fromLast + ", " + msg;
-	}
+    public static String timeDuration(String msg)
+    {
+        long    now = System.currentTimeMillis();
+        long    fromLast  = now - sLastTime;
+        long    fromStart = now - sStartTime;
+        sLastTime = now;
+        return "Elapsed from start " + fromStart + ", from last " + fromLast + ", " + msg;
+    }
 
     /** Set the logging level of the package logger.
      * If logLevel is not passed in, get it from system property.
