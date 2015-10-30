@@ -95,7 +95,7 @@ Apply execute mode to the fetchmailatt shell script to make it runnable.
 
 When it runs, FetchMailAtt processes through the relevant mails once and then
 ends.  To periodically look for new emails, schedule it to run periodically
-as a task on Windows Task Manager or schedule it with cron on Linux.  The config 
+as a task on Windows Task Scheduler or schedule it with cron on Linux.  The config 
 property *process.resume.from.last* enables/disables resuming from last run to
 examine only the new emails.
 
